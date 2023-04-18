@@ -7,7 +7,7 @@ This module cleans the data in preperation for analysis
 """
 import pandas as pd
 
-def column_cleaning(aviation_raw):
+def cleaning_aviation_data(aviation_raw):
     """Cleans aviation data"""
     # Assign to variable for cleaning
     aviation_data_cleaned = aviation_raw
@@ -46,13 +46,69 @@ def column_cleaning(aviation_raw):
     'accident_number',
     'registration_number',
     'publication_date',
-    'investigation_type'
+    'investigation_type',
+    'report_status'
     ], axis=1)
     
     # Pull out columns to drop with over 60% missing data
     missing_data = (aviation_data_cleaned.isna().sum() / len(aviation_data_cleaned)).sort_values(ascending=False)
     columns_to_drop = missing_data[missing_data.values > 0.6].index.to_list()
     aviation_data_cleaned = aviation_data_cleaned.drop(columns_to_drop, axis=1)
+    
+    # Drop events with no location since there are only 10
+    aviation_data_cleaned = aviation_data_cleaned[aviation_data_cleaned['location'].notna()]
+    
+    # Replace missing airport data with unknowns
+    aviation_data_cleaned[['airport_code', 'airport_name']] = aviation_data_cleaned[['airport_code','airport_name']].fillna('Unknown')
+    
+    # We can drop these rows since there's only 15
+    aviation_data_cleaned.dropna(subset=['injury_severity'], inplace=True)
+
+    # Replace total uninjured with median
+    total_uninjured_median = aviation_data_cleaned['total_uninjured'].median()
+    aviation_data_cleaned['total_uninjured'].fillna(value=total_uninjured_median, inplace=True)
+    
+    # Assume missing injury data had 0 in column
+    aviation_data_cleaned['total_fatal_injuries'].fillna(value=0, inplace=True)
+    aviation_data_cleaned['total_serious_injuries'].fillna(value=0, inplace=True)
+    aviation_data_cleaned['total_minor_injuries'].fillna(value=0, inplace=True)
+    
+    # Replace NaNs in these columns with unknowns
+    aviation_data_cleaned['aircraft_damage'].fillna(value='Unknown', inplace=True)
+    aviation_data_cleaned['make'].fillna(value='Unknown', inplace=True)
+    aviation_data_cleaned['model'].fillna(value='Unknown', inplace=True)
+    aviation_data_cleaned['purpose_of_flight'].fillna(value='Unknown', inplace=True)
+    aviation_data_cleaned['weather_condition'].fillna(value='Unknown', inplace=True)
+    aviation_data_cleaned['broad_phase_of_flight'].fillna(value='Unknown', inplace=True)
+    
+    # Create a map for the number of engines
+    enginer_number_map = dict(aviation_data_cleaned.groupby(['make', 'model'])['number_of_engines'].agg(pd.Series.mode))
+    # Apply this map to the numer of enginers column to replace missing values
+    aviation_data_cleaned['engine_number_map'] = tuple(zip(aviation_data_cleaned['make'], aviation_data_cleaned['model']))
+    # Map the engine number to the new column
+    aviation_data_cleaned['engine_number_map'] = aviation_data_cleaned['engine_number_map'].map(enginer_number_map)
+    
+    # Fill the missing number of engine data with the best guess based on make and model
+    aviation_data_cleaned['number_of_engines'].fillna(value=aviation_data_cleaned['engine_number_map'], inplace=True)
+    
+    # Create a map for the engine type based on the make and model
+    engine_type_dict = aviation_data_cleaned.groupby(['make', 'model', 'engine_type']).size().reset_index().rename(columns={0:'count'})
+    # Create a new column to map the data to
+    engine_type_dict['make_model'] = tuple(zip(engine_type_dict['make'], engine_type_dict['model']))
+    # Make this data frame into a map
+    engine_type_map = dict(zip(engine_type_dict['make_model'], engine_type_dict['engine_type']))
+    # Map the engine type to a column
+    aviation_data_cleaned['engine_type_map'] = tuple(zip(aviation_data_cleaned['make'], aviation_data_cleaned['model']))
+    aviation_data_cleaned['engine_type_map'] = aviation_data_cleaned['engine_type_map'].map(engine_type_map)
+    
+    # Fill the missing number of engine data with the best guess based on make and model
+    aviation_data_cleaned['engine_type'].fillna(value=aviation_data_cleaned['engine_type_map'], inplace=True)
+    
+    # We still have some null values so lets replace the rest with 'Unknown'
+    aviation_data_cleaned['engine_type'].fillna(value='Unknown', inplace=True)
+    
+    # Drop Extra Columns
+    aviation_data_cleaned.drop(columns=['engine_number_map', 'engine_type_map'], inplace=True)
 
     return aviation_data_cleaned
 
@@ -69,7 +125,7 @@ def full_clean():
     summary : Pandas dataframe, cleaned and ready for anaysis
     """
     aviation_raw = pd.read_csv("data/Aviation_Data.csv")
-    aviation_data_cleaned = column_cleaning(aviation_raw)
-    # aviation_clean.to_csv('data/Aviation_Data_Cleaned.csv')
+    aviation_data_cleaned = cleaning_aviation_data(aviation_raw)
+    aviation_data_cleaned.to_csv('data/Aviation_Data_Cleaned.csv')
     
     return aviation_data_cleaned
