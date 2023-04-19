@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from matplotlib.axes._axes import _log as matplotlib_axes_logger
 from matplotlib.ticker import FuncFormatter
 import seaborn as sns
+import code_package.data_preparation as dp
 
 # Standard data manipulation packages
 import pandas as pd
@@ -27,6 +28,7 @@ params = {'axes.titlesize': large,
 plt.rcParams.update(params)
 plt.style.use('seaborn-whitegrid')
 sns.set_style("white")
+sns.set_context("poster")
 
 
 def sample_plot_1():
@@ -36,40 +38,39 @@ def sample_plot_1():
 
     This function takes no arguments and shows a nice visualization without having all your code in the notebook itself.
     """
-
-    # Set size of figure
-    fig = plt.figure(figsize=(16, 10), dpi=80)  
-
-
     # Import dataset 
-    midwest = pd.read_csv("https://raw.githubusercontent.com/selva86/datasets/master/midwest_filter.csv")
+    df = dp.full_clean("data/Aviation_Data.csv","data/Aviation_Data_Cleaned.csv")
+    
+    # Create Filters
+    top_makes_list = df['make'].value_counts().nlargest(10).index.tolist()
+    top_makes_filter = df['make'].isin(top_makes_list)
+    
+    top_models_list = df['model'].value_counts().nlargest(20).index.tolist()
+    top_models_filter = df['model'].isin(top_models_list)
 
     # Prepare Data 
-    # Create as many colors as there are unique midwest['category']
-    categories = np.unique(midwest['category'])
-    colors = [plt.cm.tab10(i/float(len(categories)-1)) for i in range(len(categories))]
+    data = df[top_makes_filter & top_models_filter].groupby(['make','model'])['event_id'].count().reset_index()
+    pivot_table_make_model = pd.pivot_table(df[top_makes_filter & top_models_filter], 
+                                        values='passenger_count', 
+                                        index='model', 
+                                        columns='make', 
+                                        aggfunc='count')
+    pivot_data = pivot_table_make_model.sort_values(by=list(pivot_table_make_model.columns), ascending=False)
 
     # create ax element
-    fig, ax = plt.subplots(figsize=(16, 10), dpi= 80, facecolor='w', edgecolor='k')
+    fig, ax = plt.subplots(figsize=(11, 11))
+    # Draw the heatmap with the rocket color pallete and correct color map
+    cmap = sns.color_palette("rocket_r", as_cmap=True)
+    hue = data['event_id'].tolist().sort()
+    sns.heatmap(pivot_data, 
+                cmap=cmap, 
+                robust=True,
+                annot=True,
+                fmt=",g",
+                ax=ax
+               )
 
-    # Draw Plot for Each Category
-    for i, category in enumerate(categories):
-        plt.scatter('area', 'poptotal', 
-                    data=midwest.loc[midwest.category==category, :], 
-                    s=20, c=colors[i], label=str(category))
-
-    # Decorations
-    plt.gca().set(xlim=(0.0, 0.1), ylim=(0, 90000),
-                  xlabel='Area', ylabel='Population')
-
-    plt.xticks(fontsize=12); plt.yticks(fontsize=12)
-    ax.yaxis.set_major_formatter(FuncFormatter(lambda x, p: format(int(x), ',')))
-
-    plt.title("Scatterplot of Midwest Area vs Population", fontsize=22)
-    plt.legend(fontsize=12)
-    plt.savefig('./images/viz1.png', transparent = True)
-    
-    plt.show()  
+    ax.set_title('Common Makes & Models to Avoid');
     
     pass
 
