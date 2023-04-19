@@ -118,6 +118,7 @@ def cleaning_aviation_data(aviation_raw):
     
     # Add new city and state columns
     aviation_data_cleaned[['city', 'state']] = aviation_data_cleaned['location'].str.rsplit(', ', 1, expand = True)
+    aviation_data_cleaned['city'] = aviation_data_cleaned['city'].str.capitalize()
 
     return aviation_data_cleaned
 
