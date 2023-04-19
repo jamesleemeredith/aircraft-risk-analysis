@@ -35,6 +35,9 @@ def cleaning_aviation_data(aviation_raw):
     # Now drop the amateur_built column since all remaining aircraft are professionally built
     aviation_data_cleaned = aviation_data_cleaned.drop('amateur_built', axis=1)
     
+    # Combine different makes but changing the case
+    aviation_data_cleaned['make'] = aviation_data_cleaned['make'].str.title()
+    
     # Update the column to the correct datetime type
     aviation_data_cleaned['event_date'] = pd.to_datetime(aviation_data_cleaned['event_date'])
     
@@ -82,7 +85,8 @@ def cleaning_aviation_data(aviation_raw):
     aviation_data_cleaned['broad_phase_of_flight'].fillna(value='Unknown', inplace=True)
     
     # Create a map for the number of engines
-    enginer_number_map = dict(aviation_data_cleaned.groupby(['make', 'model'])['number_of_engines'].agg(pd.Series.mode))
+    filter_nans = aviation_data_cleaned['number_of_engines'].notna()
+    enginer_number_map = dict(aviation_data_cleaned[filter_nans].groupby(['make', 'model'])['number_of_engines'].agg(lambda x : pd.Series.mode(x)[0]))
     # Apply this map to the numer of enginers column to replace missing values
     aviation_data_cleaned['engine_number_map'] = tuple(zip(aviation_data_cleaned['make'], aviation_data_cleaned['model']))
     # Map the engine number to the new column
@@ -109,10 +113,16 @@ def cleaning_aviation_data(aviation_raw):
     
     # Drop Extra Columns
     aviation_data_cleaned.drop(columns=['engine_number_map', 'engine_type_map'], inplace=True)
+    # Created Total Passenger Count Column
+    aviation_data_cleaned['passenger_count'] = aviation_data_cleaned[['total_fatal_injuries','total_serious_injuries','total_minor_injuries','total_uninjured']].sum(axis=1)
+    
+    # Add new city and state columns
+    aviation_data_cleaned[['city', 'state']] = aviation_data_cleaned['location'].str.rsplit(', ', 1, expand = True)
+    aviation_data_cleaned['city'] = aviation_data_cleaned['city'].str.capitalize()
 
     return aviation_data_cleaned
 
-def full_clean():
+def full_clean(file_path,output_path):
     """
     Main cleaning function that will call support functions
     Assumption: 
@@ -124,8 +134,8 @@ def full_clean():
     Output:
     summary : Pandas dataframe, cleaned and ready for anaysis
     """
-    aviation_raw = pd.read_csv("data/Aviation_Data.csv")
+    aviation_raw = pd.read_csv(file_path)
     aviation_data_cleaned = cleaning_aviation_data(aviation_raw)
-    aviation_data_cleaned.to_csv('data/Aviation_Data_Cleaned.csv')
+    aviation_data_cleaned.to_csv(output_path)
     
     return aviation_data_cleaned
