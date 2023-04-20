@@ -97,6 +97,8 @@ def cleaning_aviation_data(aviation_raw):
     
     # Fill the missing number of engine data with the best guess based on make and model
     aviation_data_cleaned['number_of_engines'].fillna(value=aviation_data_cleaned['engine_number_map'], inplace=True)
+    # Drop the remaining missing records with number of enginnes missing
+    aviation_data_cleaned = aviation_data_cleaned[aviation_data_cleaned['number_of_engines'].notna()]
     
     # Create a map for the engine type based on the make and model
     engine_type_dict = aviation_data_cleaned.groupby(['make', 'model', 'engine_type']).size().reset_index().rename(columns={0:'count'})
@@ -122,6 +124,8 @@ def cleaning_aviation_data(aviation_raw):
     # Add new city and state columns
     aviation_data_cleaned[['city', 'state']] = aviation_data_cleaned['location'].str.rsplit(', ', 1, expand = True)
     aviation_data_cleaned['city'] = aviation_data_cleaned['city'].str.capitalize()
+    # Drop rows with null states
+    aviation_data_cleaned = aviation_data_cleaned[aviation_data_cleaned['state'].notna()]
     
     # Update weather conditions names
     weather_map = { 'VMC' : 'Visual Meteorological Conditions',
