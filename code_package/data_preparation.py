@@ -35,6 +35,9 @@ def cleaning_aviation_data(aviation_raw):
     # Now drop the amateur_built column since all remaining aircraft are professionally built
     aviation_data_cleaned = aviation_data_cleaned.drop('amateur_built', axis=1)
     
+    # Remove the incidents, only keep accidents
+    aviation_data_cleaned = aviation_data_cleaned[aviation_data_cleaned['investigation_type']=='Accident']
+    
     # Combine different makes but changing the case
     aviation_data_cleaned['make'] = aviation_data_cleaned['make'].str.title()
     
@@ -119,6 +122,19 @@ def cleaning_aviation_data(aviation_raw):
     # Add new city and state columns
     aviation_data_cleaned[['city', 'state']] = aviation_data_cleaned['location'].str.rsplit(', ', 1, expand = True)
     aviation_data_cleaned['city'] = aviation_data_cleaned['city'].str.capitalize()
+    
+    # Update weather conditions names
+    weather_map = { 'VMC' : 'Visual Meteorological Conditions',
+                     'IMC' : 'Instrument Meteorological Conditions',
+                     'Unknown' : 'Unknown Meteorological Conditions',
+                     'UNK' : 'Unknown Meteorological Conditions',
+                     'Unk' : 'Unknown Meteorological Conditions'
+    }
+
+    aviation_data_cleaned['weather_condition'] = aviation_data_cleaned['weather_condition'].map(weather_map)
+    
+    # Clean up the injury severity
+    aviation_data_cleaned['injury_severity'] = aviation_data_cleaned['injury_severity'].str.split('(', 1, expand = True)
 
     return aviation_data_cleaned
 

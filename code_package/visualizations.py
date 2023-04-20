@@ -31,7 +31,7 @@ sns.set_style("white")
 sns.set_context("poster")
 
 
-def sample_plot_1():
+def makes_to_avoid():
     """
     This is a sample visualization function to show what one looks like.
     The code is borrowed from https://www.machinelearningplus.com/plots/top-50-matplotlib-visualizations-the-master-plots-python/
