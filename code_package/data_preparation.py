@@ -29,6 +29,16 @@ def private_or_commercial(make):
         return 'Commercial'
     else:
         return 'Unknown'
+    
+def commercial_model_cleaning_function(model):
+    top_commercial_models_list = ['A330', '747', '777', '727', 'CRJ', 'A320', '747', '737', 'DC3']
+    model = str(model)
+    for top_model in top_commercial_models_list:
+        if model.startswith(top_model):
+            return top_model
+            break
+        else:
+            return model
 
 def cleaning_aviation_data(aviation_raw):
     """Cleans aviation data"""
@@ -79,15 +89,22 @@ def cleaning_aviation_data(aviation_raw):
     aviation_data_cleaned[top_makes_filter]['make'] = aviation_data_cleaned['make'].map(top_makes_map)
     # Add a column designating Top Makes
     aviation_data_cleaned['top_make'] = aviation_data_cleaned['make'].isin(top_makes_list)
+    # Create a column to designate commercial or private
+    aviation_data_cleaned['use_category'] = aviation_data_cleaned['make'].apply(private_or_commercial)
     
     # Model Cleaning
     # Remove exccess white space from data and remove "-"
     aviation_data_cleaned['model'] = aviation_data_cleaned['model'].str.strip().str.replace('-','').str.replace(' ','')
-    # Apply Model Cleaning function
+    # Apply Model Cleaning functions
     aviation_data_cleaned['model'] = aviation_data_cleaned['model'].apply(model_cleaning_function)
+    aviation_data_cleaned['model'] = aviation_data_cleaned['model'].apply(commercial_model_cleaning_function)
+    
     # Add a column for top models
-    top_models_list = aviation_data_cleaned[top_makes_filter].groupby(['make','model']).count().reset_index()
+    top_commercial_models_list = ['A330', '747', '777', '727', 'CRJ', 'A320', '747', '737', 'DC3']
+    only_private = aviation_data_cleaned['use_category'] == 'Private Enterprise'
+    top_models_list = aviation_data_cleaned[top_makes_filter & only_private].groupby(['make','model']).count().reset_index()
     top_models_list = list(top_models_list.sort_values('event_date',ascending=False).groupby('make').head(3)['model'])
+    top_models_list.extend(top_commercial_models_list)
     aviation_data_cleaned['top_model'] = aviation_data_cleaned['model'].isin(top_models_list)
     
     # Update the column to the correct datetime type
@@ -190,8 +207,10 @@ def cleaning_aviation_data(aviation_raw):
     # Clean up the injury severity
     aviation_data_cleaned['injury_severity'] = aviation_data_cleaned['injury_severity'].str.split('(', 1, expand = True)
     
-    # Create a column to designate commercial or private
-    aviation_data_cleaned['use_category'] = aviation_data_cleaned['make'].apply(private_or_commercial)
+    # Create a column call fatality rate to figure out the deadliness of the accident
+    aviation_data_cleaned['fatality_rate'] = aviation_data_cleaned['total_fatal_injuries']/aviation_data_cleaned['passenger_count']
+    # Create a column call fatality rate to figure out the deadliness of the accident
+    aviation_data_cleaned['percent_uninjured'] = aviation_data_cleaned['total_uninjured']/aviation_data_cleaned['passenger_count']
 
     return aviation_data_cleaned
 

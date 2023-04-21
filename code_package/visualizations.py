@@ -7,6 +7,7 @@ A framework for each type of visualization is provided.
 import matplotlib.pyplot as plt
 from matplotlib.axes._axes import _log as matplotlib_axes_logger
 from matplotlib.ticker import FuncFormatter
+import matplotlib.ticker as mtick
 import seaborn as sns
 import code_package.data_preparation as dp
 
@@ -26,79 +27,57 @@ params = {'axes.titlesize': large,
           'ytick.labelsize': med,
           'figure.titlesize': large}
 plt.rcParams.update(params)
-plt.style.use('seaborn-whitegrid')
-sns.set_style("white")
+sns.set_style("dark")
 sns.set_context("poster")
+sns.color_palette("colorblind")
 
 
-def makes_to_avoid():
-    """
-    This is a sample visualization function to show what one looks like.
-    The code is borrowed from https://www.machinelearningplus.com/plots/top-50-matplotlib-visualizations-the-master-plots-python/
-
-    This function takes no arguments and shows a nice visualization without having all your code in the notebook itself.
-    """
-    # Import dataset 
-    df = dp.full_clean("data/Aviation_Data.csv","data/Aviation_Data_Cleaned.csv")
-    
-    # Create Filters
-    top_makes_list = df['make'].value_counts().nlargest(10).index.tolist()
-    top_makes_filter = df['make'].isin(top_makes_list)
-    
-    top_models_list = df['model'].value_counts().nlargest(20).index.tolist()
-    top_models_filter = df['model'].isin(top_models_list)
-
-    # Prepare Data 
-    data = df[top_makes_filter & top_models_filter].groupby(['make','model'])['event_id'].count().reset_index()
-    pivot_table_make_model = pd.pivot_table(df[top_makes_filter & top_models_filter], 
-                                        values='passenger_count', 
-                                        index='model', 
-                                        columns='make', 
-                                        aggfunc='count')
-    pivot_data = pivot_table_make_model.sort_values(by=list(pivot_table_make_model.columns), ascending=False)
-
-    # create ax element
-    fig, ax = plt.subplots(figsize=(11, 11))
-    # Draw the heatmap with the rocket color pallete and correct color map
-    cmap = sns.color_palette("rocket_r", as_cmap=True)
-    hue = data['event_id'].tolist().sort()
-    sns.heatmap(pivot_data, 
-                cmap=cmap, 
-                robust=True,
-                annot=True,
-                fmt=",g",
-                ax=ax
+def commercial_fatality_rates(df):
+    fig, ax = plt.subplots()
+    data = df[df['top_make'] & (df['use_category'] == 'Commercial')]
+    sns.barplot(data=data, 
+                x='make', 
+                y='fatality_rate',
+                ax=ax,
                )
-
-    ax.set_title('Common Makes & Models to Avoid');
+    ax.set_title('Fatality Rates by Make (Commercial)')
+    ax.set_ylabel('Fatality Rate')
+    ax.set_xlabel('Make')
+    ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=None))
+    fig.savefig("images/commercial_fatality_rates_by_make.png");
     
     pass
 
-def sample_plot2():
-    """
-    This is a sample visualization function to show what one looks like.
-    The code is borrowed from https://www.machinelearningplus.com/plots/top-50-matplotlib-visualizations-the-master-plots-python/
+def private_fatality_rates(df):
+    fig, ax = plt.subplots()
+    data = df[df['top_make']  & (df['use_category'] == 'Private Enterprise')]
+    sns.barplot(data=data, 
+                x='make', 
+                y='fatality_rate',
+                ax=ax,
+               )
+    ax.set_title('Fatality Rates by Make (Private Enterprise)')
+    ax.set_ylabel('Fatality Rate')
+    ax.set_xlabel('Make')
+    ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=None))
+    fig.savefig("images/private_fatality_rates_by_make.png");
 
-    This function takes no arguments and shows a nice visualization without having all your code in the notebook itself.
-    """
+    pass
 
-    plt.figure(figsize=(16, 10), dpi=80)
-    # Import Data
-    df = pd.read_csv("https://github.com/selva86/datasets/raw/master/mpg_ggplot2.csv")
-
-    # Draw Plot
-    plt.figure(figsize=(16,10), dpi= 80)
-    sns.kdeplot(df.loc[df['cyl'] == 4, "cty"], shade=True, color="g", label="Cyl=4", alpha=.7)
-    sns.kdeplot(df.loc[df['cyl'] == 5, "cty"], shade=True, color="deeppink", label="Cyl=5", alpha=.7)
-    sns.kdeplot(df.loc[df['cyl'] == 6, "cty"], shade=True, color="dodgerblue", label="Cyl=6", alpha=.7)
-    sns.kdeplot(df.loc[df['cyl'] == 8, "cty"], shade=True, color="orange", label="Cyl=8", alpha=.7)
-
-    # Decoration
-    plt.title('Density Plot of City Mileage by n_Cylinders', fontsize=22)
-    plt.gca().set(xlabel='Mileage per Gallon in the City', ylabel='Kernel Denisty')
-    plt.legend()
-    plt.savefig('./images/viz2.png', transparent = True)
-    plt.show()
+def private_models_fatality_rates(df):
+    fig, ax = plt.subplots(figsize=(10, 10))
+    df_filter = df['top_model'] & (df['use_category'] == 'Private Enterprise')
+    sns.barplot(data=df[df_filter], 
+                x='fatality_rate',
+                y='model',
+                ax=ax,
+               )
+    sns.set_style("dark")
+    ax.set_title('Fatality Rates by Model (Private Enterprise)')
+    ax.set_ylabel('Fatality Rate')
+    ax.set_xlabel('Make')
+    ax.xaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=None))
+    fig.savefig("images/private_fatality_rates_by_model.png");
 
     pass
 
