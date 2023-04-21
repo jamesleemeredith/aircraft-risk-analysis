@@ -7,6 +7,29 @@ This module cleans the data in preperation for analysis
 """
 import pandas as pd
 
+# Create a custom mapping function for airplane models based on reserached model patterns
+def model_cleaning_function(model):
+    model = str(model)
+    if model.startswith('1') or model.startswith('2'):
+         model = model[:3]
+    elif any(map(model.startswith, ['PA','A','DA','G','SR','C','L'])):
+        model = model[:4]
+    elif model.startswith('HAWKER'):
+         model = 'HAWKER'
+    else: 
+        model = model
+    return model
+
+def private_or_commercial(make):
+    private = ['Beech', 'Cessna', 'Cirrus', 'Piper', 'Diamond']
+    commercial = ['Lockheed', 'Airbus', 'Grumman', 'Raytheon', 'Boeing']
+    if make in private:
+        return 'Private Enterprise'
+    elif make in commercial:
+        return 'Commercial'
+    else:
+        return 'Unknown'
+
 def cleaning_aviation_data(aviation_raw):
     """Cleans aviation data"""
     # Assign to variable for cleaning
@@ -40,6 +63,32 @@ def cleaning_aviation_data(aviation_raw):
     
     # Combine different makes but changing the case
     aviation_data_cleaned['make'] = aviation_data_cleaned['make'].str.title()
+    ## Create a list of top brands and a map
+    top_makes_list = ['Beech', 'Cessna', 'Cirrus', 'Piper', 'Diamond',
+                  'Lockheed', 'Airbus', 'Grumman', 'Raytheon', 'Boeing']
+    top_makes_map = {}
+
+    for make in top_makes_list:
+        beech_dict = aviation_data_cleaned[aviation_data_cleaned['make']
+                                           .str.contains(make)]['make'].value_counts().to_frame()
+        beech_dict['make'] = make
+        top_makes_map.update(dict(beech_dict['make']))
+    
+    # Apply the Top Makes Map to the data
+    top_makes_filter = aviation_data_cleaned['make'].isin(top_makes_list)
+    aviation_data_cleaned[top_makes_filter]['make'] = aviation_data_cleaned['make'].map(top_makes_map)
+    # Add a column designating Top Makes
+    aviation_data_cleaned['top_make'] = aviation_data_cleaned['make'].isin(top_makes_list)
+    
+    # Model Cleaning
+    # Remove exccess white space from data and remove "-"
+    aviation_data_cleaned['model'] = aviation_data_cleaned['model'].str.strip().str.replace('-','').str.replace(' ','')
+    # Apply Model Cleaning function
+    aviation_data_cleaned['model'] = aviation_data_cleaned['model'].apply(model_cleaning_function)
+    # Add a column for top models
+    top_models_list = aviation_data_cleaned[top_makes_filter].groupby(['make','model']).count().reset_index()
+    top_models_list = list(top_models_list.sort_values('event_date',ascending=False).groupby('make').head(3)['model'])
+    aviation_data_cleaned['top_model'] = aviation_data_cleaned['model'].isin(top_models_list)
     
     # Update the column to the correct datetime type
     aviation_data_cleaned['event_date'] = pd.to_datetime(aviation_data_cleaned['event_date'])
@@ -49,6 +98,7 @@ def cleaning_aviation_data(aviation_raw):
     
     # Drop columns with irrelevant data
     aviation_data_cleaned = aviation_data_cleaned.drop([
+    'event_id',
     'accident_number',
     'registration_number',
     'publication_date',
@@ -139,6 +189,9 @@ def cleaning_aviation_data(aviation_raw):
     
     # Clean up the injury severity
     aviation_data_cleaned['injury_severity'] = aviation_data_cleaned['injury_severity'].str.split('(', 1, expand = True)
+    
+    # Create a column to designate commercial or private
+    aviation_data_cleaned['use_category'] = aviation_data_cleaned['make'].apply(private_or_commercial)
 
     return aviation_data_cleaned
 
