@@ -212,7 +212,7 @@ def cleaning_aviation_data(aviation_raw):
     
     # Create a column call fatality rate to figure out the deadliness of the accident
     aviation_data_cleaned['percent_uninjured'] = aviation_data_cleaned['total_uninjured']/aviation_data_cleaned['passenger_count']
-    aviation_data_cleaned.fillna(0, inplace=True)
+    aviation_data_cleaned.fillna(0)
     
     return aviation_data_cleaned
 
