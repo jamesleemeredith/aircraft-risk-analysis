@@ -24,7 +24,7 @@ def private_or_commercial(make):
     private = ['Beech', 'Cessna', 'Cirrus', 'Piper', 'Diamond']
     commercial = ['Lockheed', 'Airbus', 'Grumman', 'Raytheon', 'Boeing']
     if make in private:
-        return 'Private Enterprise'
+        return 'Private'
     elif make in commercial:
         return 'Commercial'
     else:
@@ -101,7 +101,7 @@ def cleaning_aviation_data(aviation_raw):
     
     # Add a column for top models
     top_commercial_models_list = ['A330', '747', '777', '727', 'CRJ', 'A320', '747', '737', 'DC3']
-    only_private = aviation_data_cleaned['use_category'] == 'Private Enterprise'
+    only_private = aviation_data_cleaned['use_category'] == 'Private'
     top_models_list = aviation_data_cleaned[top_makes_filter & only_private].groupby(['make','model']).count().reset_index()
     top_models_list = list(top_models_list.sort_values('event_date',ascending=False).groupby('make').head(3)['model'])
     top_models_list.extend(top_commercial_models_list)
@@ -209,9 +209,11 @@ def cleaning_aviation_data(aviation_raw):
     
     # Create a column call fatality rate to figure out the deadliness of the accident
     aviation_data_cleaned['fatality_rate'] = aviation_data_cleaned['total_fatal_injuries']/aviation_data_cleaned['passenger_count']
+    
     # Create a column call fatality rate to figure out the deadliness of the accident
     aviation_data_cleaned['percent_uninjured'] = aviation_data_cleaned['total_uninjured']/aviation_data_cleaned['passenger_count']
-
+    aviation_data_cleaned.fillna(0, inplace=True)
+    
     return aviation_data_cleaned
 
 def full_clean(file_path,output_path):
