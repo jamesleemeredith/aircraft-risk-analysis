@@ -24,7 +24,7 @@ Our analysis focused on reduction of investment risk by prioritizing model safet
 Results of the analysis revealed the lowest incidence of fatality in Boeing- and Airbus-manufactured large-size commercial aircraft, and Diamond-manufactured small-size aircraft.
 
 ### Interactive Dashboard (Tableau):
-![our Interactive Dashboard](https://public.tableau.com/views/Aircraft-Risk-Analysis/Dashboard1?:language=en-US&publish=yes&:display_count=n&:origin=viz_share_link)
+[Interactive Dashboard](https://public.tableau.com/views/Aircraft-Risk-Analysis/Dashboard1?:language=en-US&publish=yes&:display_count=n&:origin=viz_share_link)
 
 ### Falatilites by Make (Commercial):
 ![graph1](./images/commercial_fatality_rates_by_make.png)
