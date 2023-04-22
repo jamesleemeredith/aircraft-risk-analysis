@@ -1,90 +1,58 @@
-# Title
+# Aircraft Risk Analysis
 
-**Authors**: Student1, Student2
+**Authors**: Will Bennet, James Meredith
 
 ## Overview
 
-A one-paragraph overview of the project, including the business problem, data, methods, results and recommendations.
+The purpose of this data analysis project was to determine recommendations on potential  aircraft for a company to expand its business portfolio into. Aircraft types were broadly divided into two categories based on size and use-case: 1) large-size commercial aircraft to be used for commercial flights, and 2) small-size private aircraft for use as rentals, flight school instruction vehicles, and as air taxis. To analyze the aircraft models that posed the lowest risk of investment, records of over 90,000 aviation accidents from 1948 to 2022 compiled by The National Transportation Safety Board were used to examine safety and viability of investment. Our analysis focused on reduction of investment risk by prioritizing model safety and minimization of potential liability due to fatality in the event of a crash. Because the dataset only contained information on crashes that had occurred, and NOT on the relative frequency of incidence of said crashes for each aircraft model, our analysis focused on what's referred to in the aviation industry as "Passive Safety" features in each aircraft - features of an aircraft that protect passengers in the event of an accident - rather than on "Active Safety" features, features of an aircraft that help the pilot avoid an accident in the first place. Results of the analysis revealed the lowest incidence of fatality in Boeing- and Airbus-manufactured large-size commercial aircraft, and Diamond-manufactured small-size aircraft. Based on the analysis the authors recommend the Boeing 737, 747, and Airbus A320 as the most fitting models in the large-size commercial-use category, and the Diamond 20, 40, 42, the Cessna 172, and the Piper PA28 in the small-size category.
 
 ## Business Problem
 
-Summary of the business problem you are trying to solve, and the data questions that you plan to answer in order to solve them.
-
-***
-Questions to consider:
-* What are the business's pain points related to this project?
-* How did you pick the data analysis question(s) that you did?
-* Why are these questions important from a business perspective?
-***
+A company is expanding into new industries in order to diversify its portfolio. Specifically, they are interested in purchasing and operating airplanes for commercial and private enterprises, but do not know anything about the potential risks of aircraft. Our team was charged with determining which aircraft are the lowest risk for the company to start this new business endeavor.
 
 ## Data
 
-Describe the data being used for this project.
-
-***
-Questions to consider:
-* Where did the data come from, and how do they relate to the data analysis questions?
-* What do the data represent? Who is in the sample and what variables are included?
-* What is the target variable?
-* What are the properties of the variables you intend to use?
-***
+Data from the National Transportation Safety Board's Aviation Accident Database was used to examine safety and viability of potential investment aircraft. The database contained of over 90,000 recorded aviation accidents from 1948 to 2022.
 
 ## Methods
 
-Describe the process for analyzing or modeling the data. For Phase 1, this will be descriptive analysis.
-
-***
-Questions to consider:
-* How did you prepare, analyze or model the data?
-* Why is this approach appropriate given the data and the business problem?
+Our analysis focused on reduction of investment risk by prioritizing model safety and minimization of potential liability due to fatality in the event of a crash. Because the dataset only contained information on crashes that had occurred, and NOT on the relative frequency of incidence of said crashes for each aircraft model, our analysis focused on what's referred to in the aviation industry as "Passive Safety" features in each aircraft - features of an aircraft that protect passengers in the event of an accident - rather than on "Active Safety" features, features of an aircraft that help the pilot avoid an accident in the first place.
 ***
 
 ## Results
 
-Present your key results. For Phase 1, this will be findings from your descriptive analysis.
+Results of the analysis revealed the lowest incidence of fatality in Boeing- and Airbus-manufactured large-size commercial aircraft, and Diamond-manufactured small-size aircraft.
 
-***
-Questions to consider:
-* How do you interpret the results?
-* How confident are you that your results would generalize beyond the data you have?
-***
+### Falatilites by Make (Commercial):
+![graph1](./images/commercial_fatality_rates_by_make.png)
 
-Here is an example of how to embed images from your sub-folder:
-
-### Visual 1
-![graph1](./images/viz1.png)
+### Fatalities by Make (Private):
+![graph1](./images/private_fatality_rates_by_make.png)
 
 ## Conclusions
 
-Provide your conclusions about the work you've done, including any limitations or next steps.
-
-***
-Questions to consider:
-* What would you recommend the business do as a result of this work?
-* What are some reasons why your analysis might not fully solve the business problem?
-* What else could you do in the future to improve this project?
-***
+Based on the analysis the authors recommend the Boeing 737, 747, and Airbus A320 as the most fitting models in the large-size commercial-use category, and the Diamond 20, 40, 42, the Cessna 172, and the Piper PA28 in the small-size category. To solidify our recommendations, next steps for the analysis would be to calculate active safety metrics for each model by comparing our data to total incident-free per-model flight hours, and to analyze cost data in order to calculate investment risk from a monetary standpoint.
 
 ## For More Information
 
-Please review our full analysis in [our Jupyter Notebook](./dsc-phase1-project-template.ipynb) or our [presentation](./DS_Project_Presentation.pdf).
+<iframe src="https://public.tableau.com/views/Aircraft-Risk-Analysis/Dashboard1?:showVizHome=no&:embed=true"width="645" height="955"></iframe>
 
-For any additional questions, please contact **name & email, name & email**
+Please review our full analysis in [our Jupyter Notebook](./aviation-analysis.ipynb), our [our Interactive Dashboard](https://public.tableau.com/views/Aircraft-Risk-Analysis/Dashboard1?:language=en-US&publish=yes&:display_count=n&:origin=viz_share_link)  or our [presentation](./presentation.pdf).
+
+For any additional questions, please contact Will Bennett at wbennett711@gmail.com and James Meredith at jam637.jlm@gmail.com
 
 ## Repository Structure
 
-Describe the structure of your repository and its contents, for example:
-
 ```
-├── __init__.py                         <- .py file that signals to python these folders contain packages
-├── README.md                           <- The top-level README for reviewers of this project
-├── dsc-phase1-project-template.ipynb   <- Narrative documentation of analysis in Jupyter notebook
-├── DS_Project_Presentation.pdf         <- PDF version of project presentation
-├── code
-│   ├── __init__.py                     <- .py file that signals to python these folders contain packages
-│   ├── visualizations.py               <- .py script to create finalized versions of visuals for project
-│   ├── data_preparation.py             <- .py script used to pre-process and clean data
-│   └── eda_notebook.ipynb              <- Notebook containing data exploration
-├── data                                <- Both sourced externally and generated from code
-└── images                              <- Both sourced externally and generated from code
+├── __init__.py
+├── README.md
+├── aviation-analysis.ipynb
+├── presentation.pdf
+├── code_package
+│   ├── __init__.py
+│   ├── visualizations.py
+│   ├── data_preparation.py
+│   └── eda_notebook.ipynb
+├── data
+└── images
 ```
