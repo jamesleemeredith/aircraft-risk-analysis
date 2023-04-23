@@ -34,7 +34,8 @@ sns.color_palette("colorblind")
 
 def commercial_fatality_rates(df):
     fig, ax = plt.subplots()
-    data = df[df['top_make'] & (df['use_category'] == 'Commercial')]
+    private_makes_filter = df['top_make']  & (df['use_category'] == 'Commercial')
+    data = df[private_makes_filter].groupby('make').mean().reset_index().sort_values(by='fatality_rate')
     sns.barplot(data=data, 
                 x='make', 
                 y='fatality_rate',
@@ -50,7 +51,8 @@ def commercial_fatality_rates(df):
 
 def private_fatality_rates(df):
     fig, ax = plt.subplots()
-    data = df[df['top_make']  & (df['use_category'] == 'Private')]
+    private_makes_filter = df['top_make']  & (df['use_category'] == 'Private')
+    data = df[private_makes_filter].groupby('make').mean().reset_index().sort_values(by='fatality_rate')
     sns.barplot(data=data, 
                 x='make', 
                 y='fatality_rate',
@@ -66,8 +68,9 @@ def private_fatality_rates(df):
 
 def private_models_fatality_rates(df):
     fig, ax = plt.subplots()
-    df_filter = df['top_model'] & (df['use_category'] == 'Private')
-    sns.barplot(data=df[df_filter], 
+    private_model_filter = df['top_model']  & (df['use_category'] == 'Private')
+    data = df[private_model_filter].groupby('model').mean().reset_index().sort_values(by='fatality_rate')
+    sns.barplot(data=data, 
                 x='fatality_rate',
                 y='model',
                 ax=ax,
